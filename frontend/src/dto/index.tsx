@@ -2,7 +2,7 @@ export type Schedule = {
   id: number;
   classRoom: ClassRoom;
   subject: Subject;
-  date: Date;
+  date: string;
   startTime: string;
   endTime: string;
 };

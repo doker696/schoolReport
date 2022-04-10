@@ -1,5 +1,5 @@
 import React from 'react';
-import './App.css';
+import './App.scss';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Main from './pages/Main';
 import { Layout } from 'antd';
@@ -10,9 +10,9 @@ function App() {
     <BrowserRouter>
       <Layout>
         <Header />
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{ minHeight: 'calc(100vh - 64px)' }}>
           <Layout.Content
-            style={{ padding: '10px 160px', maxWidth: '1200px' }}
+            style={{ padding: '10px 160px' }}
           >
             <Routes>
               <Route path='/' element={<Main />} />

@@ -5,10 +5,10 @@ import { Link } from 'react-router-dom';
 type Props = {};
 const Header = (props: Props) => {
   return (
-    <Layout.Header>
+    <Layout.Header className='header'>
       <Row gutter={2} align='middle'>
         <Col span={8}>
-          <Menu theme='dark' mode='horizontal'>
+          <Menu className='menu' mode='horizontal' >
             <Menu.Item key='1'>
               <Link to={'/'}>Главная</Link>
             </Menu.Item>

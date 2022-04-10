@@ -1,0 +1,19 @@
+@import "~antd/dist/antd.css";
+
+// $primary: #284167;
+$primary: #FE5B54;
+
+.header {
+  background-color: $primary;
+}
+
+.menu {
+  background-color: $primary;
+  border-bottom: none;
+}
+
+
+.today {
+  border-color: $primary;
+  box-shadow: 5px 5px $primary;
+}
