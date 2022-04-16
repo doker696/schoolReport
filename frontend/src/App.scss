@@ -17,3 +17,11 @@ $primary: #FE5B54;
   border-color: $primary;
   box-shadow: 5px 5px $primary;
 }
+
+.listItem:hover {
+  background-color: #FE5B54;
+  transition: all 0.3s ease;
+}
+.listItem {
+  cursor: pointer;
+}

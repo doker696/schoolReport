@@ -1,113 +1,74 @@
-import { Card, Col, Divider, List, Row, Typography } from 'antd';
+import { Button, Card, Col, Divider, List, Row, Typography } from 'antd';
 import moment from 'moment';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import CreateLessonModal from '../components/CreateLessonModal';
 import { DATE_FORMAT } from '../consts';
-import { Schedule } from '../dto';
+import {
+  ClassroomDTO,
+  CreateLessonDTO,
+  GroupDTO,
+  ScheduleAssignationDTO,
+  ScheduleDTO,
+  SubjectDTO,
+} from '../dto';
+import { FieldNames } from 'rc-select/lib/Select';
+import {
+  changeLesson,
+  createLesson,
+  deleteLesson,
+  getClassrooms,
+  getGroups,
+  getSchedules,
+  getSchedulesAssignations,
+  getSubject,
+} from '../api';
 
 type Props = {};
 
-const schedule: Schedule[] = [
-  {
-    id: 1,
-    classRoom: {
-      id: 1,
-      name: '7A309',
-    },
-    subject: {
-      id: 1,
-      name: 'Математика',
-    },
-    date: '10.04.2022',
-    startTime: '08:00',
-    endTime: '08:40',
-  },
-  {
-    id: 2,
-    classRoom: {
-      id: 1,
-      name: '7A309',
-    },
-    subject: {
-      id: 2,
-      name: 'Русский язык',
-    },
-    date: '10.04.2022',
-    startTime: '08:45',
-    endTime: '09:25',
-  },
-  {
-    id: 3,
-    classRoom: {
-      id: 2,
-      name: '7A320',
-    },
-    subject: {
-      id: 1,
-      name: 'Математика',
-    },
-    date: '10.04.2022',
-    startTime: '09:35',
-    endTime: '10:15',
-  },
-  {
-    id: 4,
-    classRoom: {
-      id: 1,
-      name: '7A309',
-    },
-    subject: {
-      id: 1,
-      name: 'Математика',
-    },
-    date: '09.04.2022',
-    startTime: '08:00',
-    endTime: '08:40',
-  },
-  {
-    id: 5,
-    classRoom: {
-      id: 1,
-      name: '7A309',
-    },
-    subject: {
-      id: 2,
-      name: 'Русский язык',
-    },
-    date: '09.04.2022',
-    startTime: '08:45',
-    endTime: '09:25',
-  },
-  {
-    id: 6,
-    classRoom: {
-      id: 2,
-      name: '7A320',
-    },
-    subject: {
-      id: 1,
-      name: 'Математика',
-    },
-    date: '09.04.2022',
-    startTime: '09:35',
-    endTime: '10:15',
-  },
-];
-
 const genetateDateItem = (
   dateNow: string,
+  handleModalOpen: (id?: number, data?: {
+    class?: ClassroomDTO;
+    subject?: SubjectDTO;
+    time?: string;
+    group?: GroupDTO;
+    date?: string;
+  }) => void,
   i: number,
-  _sсhedule: Schedule[]
+  sсhedule: ScheduleDTO[],
+  classrooms: ClassroomDTO[],
+  subjects: SubjectDTO[],
+  groups: GroupDTO[],
+  scheduleAssignations: ScheduleAssignationDTO[]
 ) => {
   const date = moment(dateNow, DATE_FORMAT).add(i, 'days').format(DATE_FORMAT);
-  const lessons: {class: string, name: string, time: string}[] = _sсhedule.filter(el => el.date === date).map( el =>({
-    class: el.classRoom.name,
-    name: el.subject.name,
-    time: el.startTime + '-' + el.endTime
-  }))
+  const lessons: {
+    id: number,
+    class?: ClassroomDTO;
+    subject?: SubjectDTO;
+    time?: string;
+    group?: GroupDTO;
+  }[] = sсhedule
+    .filter((el) => moment(el.date).format(DATE_FORMAT) === date)
+    .map((el) => ({
+      id: el.id, 
+      class: classrooms.find((classroom) => classroom.id === el.classroom_id),
+      subject: subjects.find((subject) => subject.id === el.subject_id),
+      time: el.start_time + '-' + el.end_time,
+      group: groups.find(
+        (_el) =>
+          _el.id ===
+          scheduleAssignations.find((_el) => _el.schedule_id === el.id)
+            ?.group_id
+      ),
+    }));
+
   return (
     <Col span={3}>
       <List
-        className={date === moment(Date.now()).format(DATE_FORMAT) ? 'today' : ''}
+        className={
+          date === moment(Date.now()).format(DATE_FORMAT) ? 'today' : ''
+        }
         size='small'
         header={
           <div>
@@ -118,13 +79,18 @@ const genetateDateItem = (
         dataSource={lessons}
         locale={{ emptyText: 'Нет уроков!' }}
         renderItem={(item) => (
-          <List.Item>
-            <Row>
-              <Row>{item.class}</Row>
-              <Row>
-                {item.name}{' '}
+          <List.Item
+            onClick={() => handleModalOpen(item.id, { ...item, date })}
+            className='listItem'
+          >
+            <Row key={i}>
+              <Col flex='1 0 100%'>
+                {item.group?.name} {item.class?.name}
+              </Col>
+              <Col flex='1 0 100%'>{item.subject?.name}</Col>
+              <Col>
                 <Typography.Text type='secondary'>{item.time}</Typography.Text>
-              </Row>
+              </Col>
             </Row>
           </List.Item>
         )}
@@ -133,14 +99,35 @@ const genetateDateItem = (
   );
 };
 const generateStartDateItems = (
-  setDateItems: Dispatch<SetStateAction<JSX.Element[]>>
+  setDateItems: Dispatch<SetStateAction<JSX.Element[]>>,
+  handleModalOpen: (id?: number, data?: {
+    class?: ClassroomDTO;
+    subject?: SubjectDTO;
+    time?: string;
+    group?: GroupDTO;
+    date?: string;
+  }) => void,
+  schedule: ScheduleDTO[],
+  subjects: SubjectDTO[],
+  classrooms: ClassroomDTO[],
+  groups: GroupDTO[],
+  scheduleAss: ScheduleAssignationDTO[]
 ) => {
-  const startDate = moment(Date.now()).startOf('isoWeek').format(DATE_FORMAT)
+  const startDate = moment(Date.now()).startOf('isoWeek').format(DATE_FORMAT);
   let items: JSX.Element[] = [];
 
   for (let i = 0; i < 7; i++) {
     items.push(
-      genetateDateItem(startDate, i, schedule)
+      genetateDateItem(
+        startDate,
+        handleModalOpen,
+        i,
+        schedule,
+        classrooms,
+        subjects,
+        groups,
+        scheduleAss
+      )
     );
   }
   setDateItems(items);
@@ -148,14 +135,129 @@ const generateStartDateItems = (
 
 const Main = (props: Props) => {
   const [dateItems, setDateItems] = useState<JSX.Element[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});
+  const [id, setId] = useState<number | null>(null);
+  
+  const [groups, setGroups] = useState<GroupDTO[]>([]);
+  const [classrooms, setClassrooms] = useState<ClassroomDTO[]>([]);
+  const [subject, setSubject] = useState<SubjectDTO[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleDTO[]>([]);
+  const [schedulesAssignations, setSchedulesAssignations] = useState<
+    ScheduleAssignationDTO[]
+  >([]);
+
+  const closeModal = () => setOpenModal(false);
+  const createSubject = (lesson: CreateLessonDTO) => {
+    createLesson(lesson).then((_) => {
+      getSchedules().then((res) => setSchedules(res.data));
+      getSchedulesAssignations().then((res) =>
+        setSchedulesAssignations(res.data)
+      );
+    });
+  };
+  const changeSubject = (id: number, lesson: CreateLessonDTO) => {
+    changeLesson(id, lesson).then((_) => {
+      getSchedules().then((res) => setSchedules(res.data));
+      getSchedulesAssignations().then((res) =>
+        setSchedulesAssignations(res.data)
+      );
+    });
+  };
+  const deleteSubject = (id: number) => {
+    deleteLesson(id).then((_) => {
+      getSchedules().then((res) => setSchedules(res.data));
+      getSchedulesAssignations().then((res) =>
+        setSchedulesAssignations(res.data)
+      );
+    });
+  };
+  useEffect(() => {
+    getGroups().then((res) => setGroups(res.data));
+    getClassrooms().then((res) => setClassrooms(res.data));
+    getSubject().then((res) => setSubject(res.data));
+    getSchedules().then((res) => setSchedules(res.data));
+    getSchedulesAssignations().then((res) =>
+      setSchedulesAssignations(res.data)
+    );
+  }, []);
 
   useEffect(() => {
-    generateStartDateItems(setDateItems);
-  }, []);
+    console.log('regenerate');
+    
+    generateStartDateItems(
+      setDateItems,
+      handleModalOpen,
+      schedules,
+      subject,
+      classrooms,
+      groups,
+      schedulesAssignations
+    );
+  }, [classrooms, groups, schedules, schedulesAssignations, subject]);
+
+  const groupsOptions: any[] = groups.map((el) => ({
+    label: el.name,
+    value: el.id,
+  }));
+  const classroomOptions: any[] = classrooms.map((el) => ({
+    label: el.name,
+    value: el.id,
+  }));
+  const subjectOptions: any[] = subject.map((el) => ({
+    label: el.name,
+    value: el.id,
+  }));
+
+  const handleModalOpen = (
+    id?: number,
+    data?: {
+      class?: ClassroomDTO;
+      subject?: SubjectDTO;
+      time?: string;
+      group?: GroupDTO;
+      date?: string;
+    }
+  ) => {
+    if (id) {
+      setId(id)
+      setModalData({
+        start_time: data?.time?.split('-')[0],
+        end_time: data?.time?.split('-')[1],
+        subject_id: data?.subject?.id,
+        classroom_id: data?.class?.id,
+        group_id: data?.group?.id,
+        date: data?.date,
+      });
+    } else {
+      setId(null)
+      setModalData({});
+    }
+
+    setOpenModal(true);
+  };
 
   return (
     <div>
+      <Row justify='end' style={{ marginBottom: '10px' }}>
+        <Col pull={1}>
+          <Button onClick={() => handleModalOpen()}>Добавить урок</Button>
+        </Col>
+      </Row>
       <Row justify='space-around'>{dateItems}</Row>
+
+      <CreateLessonModal
+        data={modalData}
+        id={id}
+        visible={openModal}
+        closeModal={closeModal}
+        createLesson={createSubject}
+        deleteLesson={deleteSubject}
+        changeLesson={changeSubject}
+        groups={groupsOptions}
+        lessons={subjectOptions}
+        classrooms={classroomOptions}
+      />
     </div>
   );
 };

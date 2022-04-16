@@ -1,23 +1,37 @@
-export type Schedule = {
+export type ScheduleDTO = {
   id: number;
-  classRoom: ClassRoom;
-  subject: Subject;
+  classroom_id: number;
+  subject_id: number;
   date: string;
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
 };
 
-export type ClassRoom = {
+export type ClassroomDTO = {
   id: number;
   name: string;
 };
 
-export type Subject = {
+export type SubjectDTO = {
+  id: number;
+  name: string;
+};
+export type ScheduleAssignationDTO = {
+  id: number;
+  schedule_id: number;
+  group_id: number;
+};
+
+export type GroupDTO = {
   id: number;
   name: string;
 };
 
-export type Group = {
-  id: number;
-  name: string;
+export type CreateLessonDTO = {
+  group_id?: number;
+  classroom_id?: number;
+  subject_id?: number;
+  date?: string;
+  start_time?: string;
+  end_time?: string;
 };
