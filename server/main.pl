@@ -11,34 +11,63 @@ plugin 'RenderFile';
 my $app = app;
 my $db  = db_connect();
 my $log = Mojo::Log->new;
-$app->plugin('SecureCORS');
-$app->routes->to('cors.origin' => '*');
+
 $app->hook(
     after_dispatch => sub {
         my $c = shift;
         $c->res->headers->header( 'Access-Control-Allow-Origin' => '*' );
-        $c->res->headers->header(
-            'Access-Control-Allow-Credentials' => 'true' );
         $c->res->headers->access_control_allow_origin('*');
         $c->res->headers->header( 'Access-Control-Allow-Methods' =>
               'GET, OPTIONS, POST, DELETE, PUT' );
-        $c->res->headers->header(
-            'Access-Control-Allow-Headers' => 'Content-Type' =>
-              'application/x-www-form-urlencoded' );
+        $c->res->headers->header( 'Access-Control-Allow-Headers' =>
+'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers'
+        );
 
     }
 );
-
-# my $static = $app->static;
-# push @{$static->paths}, curfile->dirname->sibling('img')->to_string;
-
-# Route with placeholder
 get '/' => sub ($c) {
     $c->render( text => "hello" );
 };
+####
+get '/groups' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from groups")
+      or die "prepare statement failed: $db->errstr()";
 
-get '/editions' => sub ($c) {
-    my $sql = $db->prepare("SELECT id, name, year from edition")
+    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+
+    $c->render( json => @results );
+};
+post '/groups' => sub ($c) {
+    my $name = $c->param('name');
+    my $sql  = $db->prepare("insert into groups values(default, \'$name\')")
+      or die "prepare statement failed: $db->errstr()";
+
+    my @results = $sql->execute();
+
+    $c->render( json => @results );
+};
+
+####
+get '/subject' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from subject")
+      or die "prepare statement failed: $db->errstr()";
+
+    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+
+    $c->render( json => @results );
+};
+####
+get '/schedule' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from schedule order by start_time")
+      or die "prepare statement failed: $db->errstr()";
+
+    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+
+    $c->render( json => @results );
+};
+####
+get '/schedule_assignations' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from schedule_assignation")
       or die "prepare statement failed: $db->errstr()";
 
     my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
@@ -46,33 +75,106 @@ get '/editions' => sub ($c) {
     $c->render( json => @results );
 };
 
-get '/releases' => sub ($c) {
-    my $editionId = $c->param('id');
-    my $sql       = $db->prepare(
-        "SELECT r.id as id,a.name as author,c.page, title , r.contentId as \"contentId\"
-from release r 
-join author a on a.id = r.authorId
-join content c on c.id = r.contentId 
-where \"editionId\" = $editionId"
-    ) or die "prepare statement failed: $db->errstr()";
+####
+get '/classroom' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from classroom")
+      or die "prepare statement failed: $db->errstr()";
+
     my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
 
     $c->render( json => @results );
 };
+####
+post '/schedule' => sub ($c) {
+    my $json = $c->req->json;
 
-get '/content' => sub ($c) {
-    my $id = $c->param('id');
-    my $sql       = $db->prepare(
-        "SELECT * from content where id = $id"
+    my $group_id     = $json->{'group_id'};
+    my $classroom_id = $json->{'classroom_id'};
+    my $subject_id   = $json->{'subject_id'};
+    my $date         = $json->{'date'};
+    my $start_time   = $json->{'start_time'};
+    my $end_time     = $json->{'end_time'};
+
+    my $sql =
+      $db->prepare( "insert into schedule values(default,"
+          . $subject_id . ","
+          . $classroom_id . ",\'"
+          . $date . "\',\'"
+          . $start_time . "\',\'"
+          . $end_time
+          . "\') returning id" )
+      or die "prepare statement failed: $db->errstr()";
+
+    $sql->execute();
+    my $result = $sql->fetchrow_hashref();
+    my $id     = $result->{'id'};
+
+    my $sql2 = $db->prepare(
+        "insert into schedule_assignation values(default,
+  " . $group_id . ",
+  " . $id . "
+  )"
     ) or die "prepare statement failed: $db->errstr()";
-    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+    $sql2->execute();
 
-    $c->render( json => $results[0][0] );
+    $c->render( json => $id, status => "200" );
 };
 
-get 'image/*img' => sub ($c) {
-    my $img = $c->param('img');
-    $c->render_file( 'filepath' => './img/' . $img );
+post '/schedule/:id' => sub ($c) {
+    my $json = $c->req->json;
+    my $idparam = $c->param('id');
+
+    my $group_id     = $json->{'group_id'};
+    my $classroom_id = $json->{'classroom_id'};
+    my $subject_id   = $json->{'subject_id'};
+    my $date         = $json->{'date'};
+    my $start_time   = $json->{'start_time'};
+    my $end_time     = $json->{'end_time'};
+
+    my $sql =
+      $db->prepare( "update schedule set 
+       subject_id = ". $subject_id . ",
+       classroom_id = ". $classroom_id . ",
+       date = \'". $date . "\',
+       start_time = \'". $start_time . "\',
+       end_time = \'". $end_time. "\' where id = ".$idparam )
+      or die "prepare statement failed: $db->errstr()";
+
+    $sql->execute();
+
+    my $sql2 = $db->prepare(
+        "update schedule_assignation set
+  group_id = " . $group_id . "
+  where schedule_id = " . $idparam . "
+  "
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql2->execute();
+
+    $c->render( text => 'success', status => "200" );
+};
+
+
+del '/schedule/:id' => sub ($c) {
+    my $idparam = $c->param('id');
+    my $sql1 =
+      $db->prepare( "delete from schedule_assignation where schedule_id = ".$idparam )
+      or die "prepare statement failed: $db->errstr()";
+
+    $sql1->execute();
+    my $sql =
+      $db->prepare( "delete from schedule where id = ".$idparam )
+      or die "prepare statement failed: $db->errstr()";
+
+    $sql->execute();
+    $c->render( text => 'success', status => "200" );
+
+};
+
+options '/schedule' => sub ($c) {
+    $c->render( text => "good", status => "200" );
+};
+options '/schedule/:id' => sub ($c) {
+    $c->render( text => "good", status => "200" );
 };
 
 # Start the Mojolicious command system
