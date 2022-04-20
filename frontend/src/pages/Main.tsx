@@ -27,13 +27,16 @@ type Props = {};
 
 const genetateDateItem = (
   dateNow: string,
-  handleModalOpen: (id?: number, data?: {
-    class?: ClassroomDTO;
-    subject?: SubjectDTO;
-    time?: string;
-    group?: GroupDTO;
-    date?: string;
-  }) => void,
+  handleModalOpen: (
+    id?: number,
+    data?: {
+      class?: ClassroomDTO;
+      subject?: SubjectDTO;
+      time?: string;
+      group?: (GroupDTO | undefined)[];
+      date?: string;
+    }
+  ) => void,
   i: number,
   sсhedule: ScheduleDTO[],
   classrooms: ClassroomDTO[],
@@ -43,26 +46,23 @@ const genetateDateItem = (
 ) => {
   const date = moment(dateNow, DATE_FORMAT).add(i, 'days').format(DATE_FORMAT);
   const lessons: {
-    id: number,
+    id: number;
     class?: ClassroomDTO;
     subject?: SubjectDTO;
     time?: string;
-    group?: GroupDTO;
+    group?: (GroupDTO | undefined)[];
   }[] = sсhedule
     .filter((el) => moment(el.date).format(DATE_FORMAT) === date)
     .map((el) => ({
-      id: el.id, 
+      id: el.id,
       class: classrooms.find((classroom) => classroom.id === el.classroom_id),
       subject: subjects.find((subject) => subject.id === el.subject_id),
       time: el.start_time + '-' + el.end_time,
-      group: groups.find(
-        (_el) =>
-          _el.id ===
-          scheduleAssignations.find((_el) => _el.schedule_id === el.id)
-            ?.group_id
-      ),
+      group: scheduleAssignations
+      .map((_el) => _el.schedule_id === el.id ? groups.find((gr) => _el.group_id === gr.id) : undefined)
+      
     }));
-
+    
   return (
     <Col span={3}>
       <List
@@ -85,7 +85,7 @@ const genetateDateItem = (
           >
             <Row key={i}>
               <Col flex='1 0 100%'>
-                {item.group?.name} {item.class?.name}
+                {item.group?.map(el => el?.name).join(' ')} {item.class?.name}
               </Col>
               <Col flex='1 0 100%'>{item.subject?.name}</Col>
               <Col>
@@ -100,13 +100,16 @@ const genetateDateItem = (
 };
 const generateStartDateItems = (
   setDateItems: Dispatch<SetStateAction<JSX.Element[]>>,
-  handleModalOpen: (id?: number, data?: {
-    class?: ClassroomDTO;
-    subject?: SubjectDTO;
-    time?: string;
-    group?: GroupDTO;
-    date?: string;
-  }) => void,
+  handleModalOpen: (
+    id?: number,
+    data?: {
+      class?: ClassroomDTO;
+      subject?: SubjectDTO;
+      time?: string;
+      group?: (GroupDTO | undefined)[];
+      date?: string;
+    }
+  ) => void,
   schedule: ScheduleDTO[],
   subjects: SubjectDTO[],
   classrooms: ClassroomDTO[],
@@ -138,7 +141,7 @@ const Main = (props: Props) => {
   const [openModal, setOpenModal] = useState(false);
   const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});
   const [id, setId] = useState<number | null>(null);
-  
+
   const [groups, setGroups] = useState<GroupDTO[]>([]);
   const [classrooms, setClassrooms] = useState<ClassroomDTO[]>([]);
   const [subject, setSubject] = useState<SubjectDTO[]>([]);
@@ -184,7 +187,7 @@ const Main = (props: Props) => {
 
   useEffect(() => {
     console.log('regenerate');
-    
+
     generateStartDateItems(
       setDateItems,
       handleModalOpen,
@@ -215,22 +218,24 @@ const Main = (props: Props) => {
       class?: ClassroomDTO;
       subject?: SubjectDTO;
       time?: string;
-      group?: GroupDTO;
+      group?: (GroupDTO | undefined)[];
       date?: string;
     }
   ) => {
     if (id) {
-      setId(id)
+      setId(id);
+      console.log(data);
+      
       setModalData({
         start_time: data?.time?.split('-')[0],
         end_time: data?.time?.split('-')[1],
         subject_id: data?.subject?.id,
         classroom_id: data?.class?.id,
-        group_id: data?.group?.id,
+        group_id: data?.group?.map(el => el?.name).join(' '),
         date: data?.date,
       });
     } else {
-      setId(null)
+      setId(null);
       setModalData({});
     }
 

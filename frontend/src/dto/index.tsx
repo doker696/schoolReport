@@ -28,7 +28,7 @@ export type GroupDTO = {
 };
 
 export type CreateLessonDTO = {
-  group_id?: number;
+  group_id?: string;
   classroom_id?: number;
   subject_id?: number;
   date?: string;

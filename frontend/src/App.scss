@@ -19,7 +19,7 @@ $primary: #FE5B54;
 }
 
 .listItem:hover {
-  background-color: #FE5B54;
+  background-color: $primary;
   transition: all 0.3s ease;
 }
 .listItem {

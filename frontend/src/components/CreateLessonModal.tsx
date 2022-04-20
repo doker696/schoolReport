@@ -1,5 +1,6 @@
 import {
   AutoComplete,
+  Avatar,
   Button,
   DatePicker,
   Modal,
@@ -27,7 +28,7 @@ type Props = {
   groups: any[];
   classrooms: any[];
 };
-const { Option } = AutoComplete;
+const { Option } = Select;
 
 const CreateLessonModal = ({
   data,
@@ -42,9 +43,25 @@ const CreateLessonModal = ({
   classrooms,
 }: Props) => {
   const [lesson, setLesson] = useState<CreateLessonDTO>({});
+  const [selectedGr, setSelectedGr] = useState<string[]>([]);
 
   useEffect(() => {
+    console.log(lesson);
+  }, [lesson]);
+  useEffect(() => {
+    if (lesson.group_id === selectedGr.map(el => groups.find(gr => gr.label == el)?.value).join(' ') ) {
+      return
+    }
+    setLesson({ ...lesson, group_id: selectedGr.map(el => groups.find(gr => gr.label == el)?.value).join(' ') });
+
+  }, [lesson, selectedGr])
+  
+  useEffect(() => {
     setLesson(data);
+    console.log(data);
+    
+    data.group_id &&
+    setSelectedGr(data.group_id?.trim().split(' '))
   }, [data]);
 
   const validateFields = () => {
@@ -75,6 +92,7 @@ const CreateLessonModal = ({
               onClick={() => {
                 deleteLesson(id);
                 setLesson({});
+                setSelectedGr([])
                 closeModal();
               }}
               danger
@@ -87,6 +105,7 @@ const CreateLessonModal = ({
               if (validateFields()) {
                 !id ? createLesson(lesson) : changeLesson(id, lesson);
                 setLesson({});
+                setSelectedGr([])
                 closeModal();
               }
             }}
@@ -101,11 +120,22 @@ const CreateLessonModal = ({
         <Row>
           <Typography.Text>Выберите класс &nbsp;</Typography.Text>
           <Select
-            style={{ width: '100px' }}
-            options={groups}
-            value={lesson.group_id}
-            onChange={(el) => setLesson({ ...lesson, group_id: el })}
-          ></Select>
+            mode='multiple'
+            optionLabelProp="title"
+            filterOption={false}
+            style={{ width: '200px' }}
+            //@ts-ignore
+            value={selectedGr}
+            onChange={(el: string[]) => {
+              setSelectedGr(el)
+            }}
+          >
+            {groups.map((el) => (
+              <Option key={el.id} label={el.label as string} value={el.label as string}>
+                {el.label}
+              </Option>
+            ))}
+          </Select>
         </Row>
         <Row>
           <Typography.Text>Выберите кабинет &nbsp;</Typography.Text>

@@ -106,22 +106,24 @@ post '/schedule' => sub ($c) {
       or die "prepare statement failed: $db->errstr()";
 
     $sql->execute();
-    my $result = $sql->fetchrow_hashref();
-    my $id     = $result->{'id'};
+    my $result    = $sql->fetchrow_hashref();
+    my $id        = $result->{'id'};
+    my $sqlString = "insert into schedule_assignation values ";
 
-    my $sql2 = $db->prepare(
-        "insert into schedule_assignation values(default,
-  " . $group_id . ",
-  " . $id . "
-  )"
-    ) or die "prepare statement failed: $db->errstr()";
+    foreach my $group ( split /\s+/, $group_id ) {
+        say "$group\n";
+        $sqlString = $sqlString . "(default, $group, $id),";
+    }
+    chop($sqlString);
+    my $sql2 = $db->prepare($sqlString)
+      or die "prepare statement failed: $db->errstr()";
     $sql2->execute();
 
     $c->render( json => $id, status => "200" );
 };
 
 post '/schedule/:id' => sub ($c) {
-    my $json = $c->req->json;
+    my $json    = $c->req->json;
     my $idparam = $c->param('id');
 
     my $group_id     = $json->{'group_id'};
@@ -131,38 +133,39 @@ post '/schedule/:id' => sub ($c) {
     my $start_time   = $json->{'start_time'};
     my $end_time     = $json->{'end_time'};
 
-    my $sql =
-      $db->prepare( "update schedule set 
-       subject_id = ". $subject_id . ",
-       classroom_id = ". $classroom_id . ",
-       date = \'". $date . "\',
-       start_time = \'". $start_time . "\',
-       end_time = \'". $end_time. "\' where id = ".$idparam )
-      or die "prepare statement failed: $db->errstr()";
+    my $sql = $db->prepare(
+        "update schedule set 
+       subject_id = " . $subject_id . ",
+       classroom_id = " . $classroom_id . ",
+       date = \'" . $date . "\',
+       start_time = \'" . $start_time . "\',
+       end_time = \'" . $end_time . "\' where id = " . $idparam
+    ) or die "prepare statement failed: $db->errstr()";
 
     $sql->execute();
+    my $sqlString = "delete from schedule_assignation where schedule_id = " . $idparam. "; insert into schedule_assignation values";
 
-    my $sql2 = $db->prepare(
-        "update schedule_assignation set
-  group_id = " . $group_id . "
-  where schedule_id = " . $idparam . "
-  "
-    ) or die "prepare statement failed: $db->errstr()";
+    foreach my $group ( split /\s+/, $group_id ) {
+        say "$group\n";
+        $sqlString = $sqlString . " (default, $group, $idparam),";
+    }
+    chop($sqlString);
+    my $sql2 = $db->prepare( $sqlString )
+      or die "prepare statement failed: $db->errstr()";
     $sql2->execute();
 
     $c->render( text => 'success', status => "200" );
 };
 
-
 del '/schedule/:id' => sub ($c) {
     my $idparam = $c->param('id');
     my $sql1 =
-      $db->prepare( "delete from schedule_assignation where schedule_id = ".$idparam )
+      $db->prepare(
+        "delete from schedule_assignation where schedule_id = " . $idparam )
       or die "prepare statement failed: $db->errstr()";
 
     $sql1->execute();
-    my $sql =
-      $db->prepare( "delete from schedule where id = ".$idparam )
+    my $sql = $db->prepare( "delete from schedule where id = " . $idparam )
       or die "prepare statement failed: $db->errstr()";
 
     $sql->execute();
