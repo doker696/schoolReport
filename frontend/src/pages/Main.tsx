@@ -22,6 +22,7 @@ import {
   getSchedulesAssignations,
   getSubject,
 } from '../api';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 type Props = {};
 
@@ -58,11 +59,13 @@ const genetateDateItem = (
       class: classrooms.find((classroom) => classroom.id === el.classroom_id),
       subject: subjects.find((subject) => subject.id === el.subject_id),
       time: el.start_time + '-' + el.end_time,
-      group: scheduleAssignations
-      .map((_el) => _el.schedule_id === el.id ? groups.find((gr) => _el.group_id === gr.id) : undefined)
-      
+      group: scheduleAssignations.map((_el) =>
+        _el.schedule_id === el.id
+          ? groups.find((gr) => _el.group_id === gr.id)
+          : undefined
+      ),
     }));
-    
+
   return (
     <Col span={3}>
       <List
@@ -85,7 +88,7 @@ const genetateDateItem = (
           >
             <Row key={i}>
               <Col flex='1 0 100%'>
-                {item.group?.map(el => el?.name).join(' ')} {item.class?.name}
+                {item.group?.map((el) => el?.name).join(' ')} {item.class?.name}
               </Col>
               <Col flex='1 0 100%'>{item.subject?.name}</Col>
               <Col>
@@ -99,6 +102,7 @@ const genetateDateItem = (
   );
 };
 const generateStartDateItems = (
+  offset: number,
   setDateItems: Dispatch<SetStateAction<JSX.Element[]>>,
   handleModalOpen: (
     id?: number,
@@ -116,7 +120,10 @@ const generateStartDateItems = (
   groups: GroupDTO[],
   scheduleAss: ScheduleAssignationDTO[]
 ) => {
-  const startDate = moment(Date.now()).startOf('isoWeek').format(DATE_FORMAT);
+  const startDate = moment(Date.now())
+    .startOf('isoWeek')
+    .add(offset, 'w')
+    .format(DATE_FORMAT);
   let items: JSX.Element[] = [];
 
   for (let i = 0; i < 7; i++) {
@@ -141,6 +148,7 @@ const Main = (props: Props) => {
   const [openModal, setOpenModal] = useState(false);
   const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});
   const [id, setId] = useState<number | null>(null);
+  const [offset, setOffset] = useState<number>(0);
 
   const [groups, setGroups] = useState<GroupDTO[]>([]);
   const [classrooms, setClassrooms] = useState<ClassroomDTO[]>([]);
@@ -189,6 +197,7 @@ const Main = (props: Props) => {
     console.log('regenerate');
 
     generateStartDateItems(
+      offset,
       setDateItems,
       handleModalOpen,
       schedules,
@@ -197,7 +206,7 @@ const Main = (props: Props) => {
       groups,
       schedulesAssignations
     );
-  }, [classrooms, groups, schedules, schedulesAssignations, subject]);
+  }, [offset, classrooms, groups, schedules, schedulesAssignations, subject]);
 
   const groupsOptions: any[] = groups.map((el) => ({
     label: el.name,
@@ -225,13 +234,13 @@ const Main = (props: Props) => {
     if (id) {
       setId(id);
       console.log(data);
-      
+
       setModalData({
         start_time: data?.time?.split('-')[0],
         end_time: data?.time?.split('-')[1],
         subject_id: data?.subject?.id,
         classroom_id: data?.class?.id,
-        group_id: data?.group?.map(el => el?.name).join(' '),
+        group_id: data?.group?.map((el) => el?.name).join(' '),
         date: data?.date,
       });
     } else {
@@ -249,7 +258,21 @@ const Main = (props: Props) => {
           <Button onClick={() => handleModalOpen()}>Добавить урок</Button>
         </Col>
       </Row>
-      <Row justify='space-around'>{dateItems}</Row>
+      <Row justify='space-around' align='middle'>
+        <Col span={1}>
+          <Button onClick={_=> setOffset(offset - 1)} icon shape='circle' size='large'>
+            <LeftOutlined />
+          </Button>
+        </Col>
+        <Col span={22}>
+          <Row justify='space-around'>{dateItems}</Row>
+        </Col>
+        <Col span={1} style={{ display: 'flex', justifyContent: 'end' }}>
+          <Button onClick={_=> setOffset(offset + 1)} icon shape='circle' size='large'>
+            <RightOutlined />
+          </Button>
+        </Col>
+      </Row>
 
       <CreateLessonModal
         data={modalData}

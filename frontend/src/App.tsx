@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Main from './pages/Main';
 import { Layout } from 'antd';
 import Header from './components/Header';
+import Contacts from './pages/Contacts';
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
           >
             <Routes>
               <Route path='/' element={<Main />} />
-              <Route path='/contacts' element={<Main />} />
+              <Route path='/contacts' element={<Contacts />} />
             </Routes>
           </Layout.Content>
         </Layout>
