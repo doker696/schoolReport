@@ -2,7 +2,7 @@ import { Button, Card, Col, Divider, List, Row, Typography } from 'antd';
 import moment from 'moment';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import CreateLessonModal from '../components/CreateLessonModal';
-import { DATE_FORMAT } from '../consts';
+import {DATE_FORMAT, DISPLAY_DATE_FORMAT} from '../consts';
 import {
   ClassroomDTO,
   CreateLessonDTO,
@@ -72,12 +72,12 @@ const genetateDateItem = (
         size='small'
         header={
           <div>
-            {date} <Divider style={{ margin: '10px 0 0 0' }} />
+            {moment(date).format(DISPLAY_DATE_FORMAT)} <Divider style={{ margin: '10px 0 0 0' }} />
           </div>
         }
         bordered
         dataSource={lessons}
-        locale={{ emptyText: 'Нет уроков!' }}
+        locale={{ emptyText: 'Нет занятий!' }}
         renderItem={(item) => (
           <List.Item
             onClick={() => handleModalOpen(item.id, { ...item, date })}
@@ -246,7 +246,7 @@ const Main = (props: Props) => {
     <div>
       <Row justify='end' style={{ marginBottom: '10px' }}>
         <Col pull={1}>
-          <Button onClick={() => handleModalOpen()}>Добавить урок</Button>
+          <Button onClick={() => handleModalOpen()}>Добавить занятие</Button>
         </Col>
       </Row>
       <Row justify='space-around'>{dateItems}</Row>
