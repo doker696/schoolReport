@@ -1,9 +1,8 @@
-import { Col, Layout, Menu, Row, Typography } from 'antd';
+import {Col, Layout, Menu, Row} from 'antd';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 
-type Props = {};
-const Header = (props: Props) => {
+const Header = () => {
   return (
     <Layout.Header className='header'>
       <Row gutter={2} align='middle'>

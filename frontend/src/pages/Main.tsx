@@ -1,17 +1,9 @@
-import { Button, Card, Col, Divider, List, Row, Typography } from 'antd';
+import {Button, Col, Divider, List, Row, Typography} from 'antd';
 import moment from 'moment';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import CreateLessonModal from '../components/CreateLessonModal';
 import {DATE_FORMAT, DISPLAY_DATE_FORMAT} from '../consts';
-import {
-  ClassroomDTO,
-  CreateLessonDTO,
-  GroupDTO,
-  ScheduleAssignationDTO,
-  ScheduleDTO,
-  SubjectDTO,
-} from '../dto';
-import { FieldNames } from 'rc-select/lib/Select';
+import {ClassroomDTO, CreateLessonDTO, GroupDTO, ScheduleAssignationDTO, ScheduleDTO, SubjectDTO,} from '../dto';
 import {
   changeLesson,
   createLesson,
@@ -23,9 +15,8 @@ import {
   getSubject,
 } from '../api';
 
-type Props = {};
 
-const genetateDateItem = (
+const generateDateItem = (
   dateNow: string,
   handleModalOpen: (
     id?: number,
@@ -38,7 +29,7 @@ const genetateDateItem = (
     }
   ) => void,
   i: number,
-  sсhedule: ScheduleDTO[],
+  schedule: ScheduleDTO[],
   classrooms: ClassroomDTO[],
   subjects: SubjectDTO[],
   groups: GroupDTO[],
@@ -51,7 +42,7 @@ const genetateDateItem = (
     subject?: SubjectDTO;
     time?: string;
     group?: (GroupDTO | undefined)[];
-  }[] = sсhedule
+  }[] = schedule
     .filter((el) => moment(el.date).format(DATE_FORMAT) === date)
     .map((el) => ({
       id: el.id,
@@ -121,7 +112,7 @@ const generateStartDateItems = (
 
   for (let i = 0; i < 7; i++) {
     items.push(
-      genetateDateItem(
+      generateDateItem(
         startDate,
         handleModalOpen,
         i,
@@ -136,7 +127,7 @@ const generateStartDateItems = (
   setDateItems(items);
 };
 
-const Main = (props: Props) => {
+const Main = () => {
   const [dateItems, setDateItems] = useState<JSX.Element[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});

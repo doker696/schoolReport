@@ -1,21 +1,8 @@
-import {
-  AutoComplete,
-  Avatar,
-  Button,
-  DatePicker,
-  Modal,
-  Row,
-  Select,
-  TimePicker,
-  Typography,
-  Col
-} from 'antd';
-import { BaseOptionType, OptionProps } from 'antd/lib/select';
+import {Button, Col, DatePicker, Modal, Row, Select, TimePicker, Typography} from 'antd';
 import moment from 'moment';
-import { FieldNames } from 'rc-select/lib/Select';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {DATE_FORMAT, DISPLAY_DATE_FORMAT} from '../consts';
-import { CreateLessonDTO, GroupDTO, SubjectDTO } from '../dto';
+import {CreateLessonDTO} from '../dto';
 
 type Props = {
   data: CreateLessonDTO;
@@ -66,19 +53,15 @@ const CreateLessonModal = ({
   }, [data]);
 
   const validateFields = () => {
-    if (
-      [
-        lesson.classroom_id,
-        lesson.date,
-        lesson.end_time,
-        lesson.group_id,
-        lesson.start_time,
-        lesson.subject_id,
-      ].includes(undefined)
-    ) {
-      return false;
-    }
-    return true;
+    return ![
+      lesson.classroom_id,
+      lesson.date,
+      lesson.end_time,
+      lesson.group_id,
+      lesson.start_time,
+      lesson.subject_id,
+    ].includes(undefined);
+
   };
 
   return (
