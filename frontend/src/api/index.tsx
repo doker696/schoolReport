@@ -8,7 +8,7 @@ export const createLesson = (lesson: CreateLessonDTO) => {
     return axios.post(`${api}/schedule`,lesson)
 }
 export const changeLesson = (id: number, lesson: CreateLessonDTO) => {
-    return axios.post(`${api}/schedule/${id}`,lesson)
+    return axios.put(`${api}/schedule/${id}`,lesson)
 }
 export const deleteLesson = (id: number) => {
     return axios.delete(`${api}/schedule/${id}`)

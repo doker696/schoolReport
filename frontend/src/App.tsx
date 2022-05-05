@@ -5,6 +5,7 @@ import Main from './pages/Main';
 import { Layout } from 'antd';
 import Header from './components/Header';
 import Contacts from './pages/Contacts';
+import Publications from "./pages/Publications";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Routes>
               <Route path='/' element={<Main />} />
               <Route path='/contacts' element={<Contacts />} />
+              <Route path='/publications' element={<Publications />} />
             </Routes>
           </Layout.Content>
         </Layout>

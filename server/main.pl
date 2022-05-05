@@ -119,10 +119,10 @@ post '/schedule' => sub ($c) {
       or die "prepare statement failed: $db->errstr()";
     $sql2->execute();
 
-    $c->render( json => $id, status => "200" );
+    $c->render( json => $id, status => "201" );
 };
 
-post '/schedule/:id' => sub ($c) {
+put '/schedule/:id' => sub ($c) {
     my $json    = $c->req->json;
     my $idparam = $c->param('id');
 
@@ -154,7 +154,7 @@ post '/schedule/:id' => sub ($c) {
       or die "prepare statement failed: $db->errstr()";
     $sql2->execute();
 
-    $c->render( text => 'success', status => "200" );
+    $c->render( json => $idparam, status => "200" );
 };
 
 del '/schedule/:id' => sub ($c) {
@@ -169,7 +169,7 @@ del '/schedule/:id' => sub ($c) {
       or die "prepare statement failed: $db->errstr()";
 
     $sql->execute();
-    $c->render( text => 'success', status => "200" );
+    $c->render( text => 'success', status => "204" );
 
 };
 

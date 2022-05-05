@@ -12,10 +12,14 @@ const Header = () => {
               <Link to={'/'}>Главная</Link>
             </Menu.Item>
             <Menu.Item key='2'>
+              <Link to={'/publications'}>Публикации</Link>
+            </Menu.Item>
+            <Menu.Item key='3'>
               <Link to={'/contacts'}>Контакты</Link>
             </Menu.Item>
           </Menu>
         </Col>
+
       </Row>
     </Layout.Header>
   );
