@@ -1,7 +1,7 @@
 import {Button, Col, Form, Input, Row, Typography} from 'antd';
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {login} from "../api";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 type Props = {
   isAuthenticate: boolean;
@@ -10,6 +10,8 @@ type Props = {
 };
 
 const Login = (props: Props) => {
+  const navigate = useNavigate();
+
   const onFinish = (values: any) => {
     login({username: values.username, password: values.password}).then((res) => {
       if (res.status == 200) {
@@ -17,6 +19,7 @@ const Login = (props: Props) => {
         props.setIsAdmin(res.data.is_admin === 1)
       }
       console.log(res.data)
+      navigate('/');
     });
   };
 
