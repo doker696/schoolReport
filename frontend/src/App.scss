@@ -1,6 +1,5 @@
 @import "~antd/dist/antd.css";
 
-// $primary: #284167;
 $primary: #FE5B54;
 
 .header {
@@ -24,4 +23,16 @@ $primary: #FE5B54;
 }
 .listItem {
   cursor: pointer;
+}
+
+.ant-menu-horizontal > .ant-menu-item-selected a {
+  color: #fff !important;
+}
+
+.ant-menu-horizontal a:hover {
+  color: #fff !important;
+}
+
+.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item:hover::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu:hover::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-active::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu-active::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-open::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu-open::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item-selected::after, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu-selected::after  {
+  border-bottom: 2px solid #fff;
 }
