@@ -35,3 +35,8 @@ export type CreateLessonDTO = {
   start_time?: string;
   end_time?: string;
 };
+
+export type LoginDTO = {
+  username?: string;
+  password?: string;
+};

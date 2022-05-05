@@ -17,7 +17,12 @@ import {
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 
+type Props = {
+  isAdmin: boolean;
+}
+
 const generateDateItem = (
+  isAdmin: boolean,
   dateNow: string,
   handleModalOpen: (
     id?: number,
@@ -74,7 +79,7 @@ const generateDateItem = (
         locale={{ emptyText: 'Нет занятий!' }}
         renderItem={(item) => (
           <List.Item
-            onClick={() => handleModalOpen(item.id, { ...item, date })}
+            onClick={() => isAdmin && handleModalOpen(item.id, { ...item, date })}
             className='listItem'
           >
             <Row key={i}>
@@ -93,6 +98,7 @@ const generateDateItem = (
   );
 };
 const generateStartDateItems = (
+  isAdmin: boolean,
   offset: number,
   setDateItems: Dispatch<SetStateAction<JSX.Element[]>>,
   handleModalOpen: (
@@ -120,6 +126,7 @@ const generateStartDateItems = (
   for (let i = 0; i < 7; i++) {
     items.push(
       generateDateItem(
+        isAdmin,
         startDate,
         handleModalOpen,
         i,
@@ -134,7 +141,7 @@ const generateStartDateItems = (
   setDateItems(items);
 };
 
-const Main = () => {
+const Main = (props: Props) => {
   const [dateItems, setDateItems] = useState<JSX.Element[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});
@@ -188,6 +195,7 @@ const Main = () => {
     console.log('regenerate');
 
     generateStartDateItems(
+      props.isAdmin,
       offset,
       setDateItems,
       handleModalOpen,
@@ -197,7 +205,7 @@ const Main = () => {
       groups,
       schedulesAssignations
     );
-  }, [offset, classrooms, groups, schedules, schedulesAssignations, subject]);
+  }, [offset, classrooms, groups, schedules, schedulesAssignations, subject, props]);
 
   const groupsOptions: any[] = groups.map((el) => ({
     label: el.name,
@@ -246,7 +254,7 @@ const Main = () => {
     <div>
       <Row justify='end' style={{ marginBottom: '10px' }}>
         <Col pull={1}>
-          <Button onClick={() => handleModalOpen()}>Добавить занятие</Button>
+          {props.isAdmin && <Button onClick={() => handleModalOpen()}>Добавить занятие</Button>}
         </Col>
       </Row>
       <Row justify='space-around' align='middle'>

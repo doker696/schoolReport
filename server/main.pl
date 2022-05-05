@@ -3,6 +3,7 @@ use Mojolicious::Lite -signatures;
 use lib "./modules";
 use Auth;
 use DB;
+use Scalar::MoreUtils qw(empty);
 use Mojolicious::Static;
 use Mojo::Log;
 use Data::Dumper;
@@ -171,6 +172,52 @@ del '/schedule/:id' => sub ($c) {
     $sql->execute();
     $c->render( text => 'success', status => "204" );
 
+};
+
+post 'login' => sub ($c) {
+    my $json    = $c->req->json;
+    my $login     = $json->{'username'};
+    my $pass     = $json->{'password'};
+    my $sql       = $db->prepare(
+        "select login,is_admin from public.user where login = \'$login\' and password = \'$pass\';"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    my $res = $sql->fetchrow_hashref;
+    return $c->render(  text => 'bad', status => '400') if empty($res);
+    $c->render( json => $res);
+
+};
+
+options 'login' => sub ($c) {
+    $c->render( text=> 'good', status => '200');
+};
+
+post '/register' => sub ($c) {
+    my $json    = $c->req->json;
+
+    my $login     = $json->{'username'};
+    my $pass     = $json->{'password'};
+
+    my $sql       = $db->prepare(
+        "select count(*) from public.user where login = \'$login\';"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    my $res = $sql->fetch()->[0];
+    $log->debug($res);
+    return $c->render( text => "bad", status => '400' ) if $res > 0;
+    $sql       = $db->prepare(
+        "insert into public.user values (default, \'$login\', \'$pass\', false);"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    $sql       = $db->prepare(
+        "select login,is_admin from public.user where login = \'$login\' and password = \'$pass\';"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    $c->render( json => $sql->fetchrow_hashref );
+};
+
+options '/register' => sub ($c) {
+    $c->render( text => "good", status => "200" );
 };
 
 options '/schedule' => sub ($c) {

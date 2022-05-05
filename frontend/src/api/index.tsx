@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React from 'react'
-import { CreateLessonDTO } from '../dto'
+import {CreateLessonDTO, LoginDTO} from '../dto'
 
 const api = 'http://127.0.0.1:3000'
 
@@ -28,4 +28,12 @@ export const getSchedules = () => {
 }
 export const getSchedulesAssignations = () => {
     return axios.get(`${api}/schedule_assignations`)
+}
+
+export const login = (data: LoginDTO) => {
+    return axios.post(`${api}/login`, data)
+}
+
+export const register = (data: LoginDTO) => {
+    return axios.post(`${api}/register`, data)
 }
