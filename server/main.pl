@@ -179,7 +179,7 @@ post 'login' => sub ($c) {
     my $login     = $json->{'username'};
     my $pass     = $json->{'password'};
     my $sql       = $db->prepare(
-        "select login,is_admin from public.user where login = \'$login\' and password = \'$pass\';"
+        "select username,is_admin from public.user where username = \'$login\' and password = \'$pass\';"
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
     my $res = $sql->fetchrow_hashref;
@@ -199,7 +199,7 @@ post '/register' => sub ($c) {
     my $pass     = $json->{'password'};
 
     my $sql       = $db->prepare(
-        "select count(*) from public.user where login = \'$login\';"
+        "select count(*) from public.user where username = \'$login\';"
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
     my $res = $sql->fetch()->[0];
@@ -210,7 +210,7 @@ post '/register' => sub ($c) {
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
     $sql       = $db->prepare(
-        "select login,is_admin from public.user where login = \'$login\' and password = \'$pass\';"
+        "select username,is_admin from public.user where username = \'$login\' and password = \'$pass\';"
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
     $c->render( json => $sql->fetchrow_hashref );

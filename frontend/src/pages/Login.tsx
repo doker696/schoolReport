@@ -2,6 +2,7 @@ import {Button, Col, Form, Input, Row, Typography} from 'antd';
 import {LockOutlined, UserOutlined} from '@ant-design/icons';
 import {login} from "../api";
 import {Link, useNavigate} from "react-router-dom";
+import {useState} from "react";
 
 type Props = {
   isAuthenticate: boolean;
@@ -11,15 +12,18 @@ type Props = {
 
 const Login = (props: Props) => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const onFinish = (values: any) => {
     login({username: values.username, password: values.password}).then((res) => {
-      if (res.status == 200) {
+      if (res.status === 200) {
         props.setIsAuthenticate(true)
         props.setIsAdmin(res.data.is_admin === 1)
       }
       console.log(res.data)
       navigate('/');
+    }).catch((reason) => {
+      setError("Неверный логин или пароль")
     });
   };
 
@@ -47,7 +51,12 @@ const Login = (props: Props) => {
               placeholder="Пароль"
             />
           </Form.Item>
-
+          {
+            error &&
+            <Form.Item style={{marginTop: "-23px", marginBottom: "0px", padding: "0px"}}>
+              <Typography.Text type={"danger"} >{error}</Typography.Text>
+            </Form.Item>
+          }
           <Form.Item>
             <Button type="primary" htmlType="submit" className="login-form-button">
               Войти
